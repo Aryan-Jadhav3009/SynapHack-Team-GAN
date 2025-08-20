@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "AZURE_SQL_CONNECTION_STRING": "@azure_sql_connection_string",
+    "AZURE_STORAGE_CONNECTION_STRING": "@azure_storage_connection_string",
+    "AZURE_STORAGE_CONTAINER": "@azure_storage_container",
+    "AZURE_SIGNALR_CONNECTION_STRING": "@azure_signalr_connection_string",
+    "JWT_SECRET": "@jwt_secret"
+  }
+}

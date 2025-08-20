@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("AZURE_SQL_CONNECTION_STRING")
+}
+
+/*
+  SQL Server compatible schema:
+  - Arrays -> String? (store JSON or comma-separated text)
+  - Json -> String? (store JSON text)
+  - Enums -> String fields with defaults (enforce values in application code)
+  - Relations use onDelete: NoAction, onUpdate: NoAction where cycles may occur
+*/
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  firstName String
+  lastName  String
+  bio       String?
+  avatar    String?
+  skills    String? // JSON string or comma-separated skills
+  github    String?
+  linkedin  String?
+  website   String?
+  role      String   @default("PARTICIPANT") // allowed: PARTICIPANT | ORGANIZER | JUDGE | ADMIN
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations (inverse side; foreign keys defined on related models)
+  organizedHackathons Hackathon[]     @relation("Organizer")
+  participations      Participation[]
+  teamMemberships     TeamMember[]
+  submissions         Submission[]
+  judgments           Judgment[]
+
+  @@map("users")
+}
+
+model Hackathon {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  theme       String?
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("UPCOMING") // UPCOMING | REGISTRATION_OPEN | IN_PROGRESS | JUDGING | COMPLETED | CANCELLED
+  maxTeamSize Int      @default(4)
+  prizes      String?  // JSON string for prize structure
+  rules       String?
+  bannerImage String?
+  organizerId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  organizer      User            @relation("Organizer", fields: [organizerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  participations Participation[]
+  teams          Team[]
+  submissions    Submission[]
+  judgments      Judgment[]
+
+  @@map("hackathons")
+}
+
+model Participation {
+  id           String   @id @default(cuid())
+  userId       String
+  hackathonId  String
+  registeredAt DateTime @default(now())
+
+  // Relations (explicit NoAction to avoid cascade cycles)
+  user      User      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([userId, hackathonId])
+  @@map("participations")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  hackathonId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  hackathon Hackathon    @relation(fields: [hackathonId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  members   TeamMember[]
+  submission Submission?
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  userId    String
+  teamId    String
+  role      String   @default("MEMBER")  // LEADER | MEMBER
+  status    String   @default("PENDING") // PENDING | ACCEPTED | DECLINED
+  joinedAt  DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  team Team @relation(fields: [teamId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([userId, teamId])
+  @@map("team_members")
+}
+
+model Submission {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  demoUrl     String?
+  repoUrl     String?
+  videoUrl    String?
+  images      String?  // JSON string array of image URLs
+  teamId      String   @unique
+  hackathonId String
+  submitterId String
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  team      Team      @relation(fields: [teamId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  submitter User      @relation(fields: [submitterId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  judgments Judgment[]
+
+  @@map("submissions")
+}
+
+model Judgment {
+  id           String   @id @default(cuid())
+  submissionId String
+  judgeId      String
+  hackathonId  String
+  criteria     String?  // JSON string with scoring criteria/scores
+  totalScore   Float
+  feedback     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  judge      User       @relation(fields: [judgeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  hackathon  Hackathon  @relation(fields: [hackathonId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([submissionId, judgeId])
+  @@map("judgments")
+}
