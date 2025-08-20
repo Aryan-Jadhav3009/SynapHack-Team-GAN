@@ -73,6 +73,8 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_47C753180A7B48E4B376799F1A4903FB }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_63023E8E8F7849FBBEE125C5D244D971 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5ADB900B2C4B4CA6AC1504895F330EA4 }}
+          auth-type: oidc
+
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -81,5 +83,6 @@ jobs:
           app-name: 'Synaphack'
           slot-name: 'Production'
           package: .
+
 
 
