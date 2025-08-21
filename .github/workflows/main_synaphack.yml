@@ -82,7 +82,8 @@ jobs:
         with:
           app-name: 'Synaphack'
           slot-name: 'Production'
-          package: deployment-package
+          package: node-app
+
 
 
 
