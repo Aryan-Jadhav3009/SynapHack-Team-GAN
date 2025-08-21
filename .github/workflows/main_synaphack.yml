@@ -46,6 +46,7 @@ jobs:
           cp package*.json deployment-package/ 2>/dev/null || true
           cp -r prisma deployment-package/ 2>/dev/null || true
           cp -r scripts deployment-package/ 2>/dev/null || true
+          cp -r app deployment-package/ 2>/dev/null || true
 
           # Copy other necessary files (next.config.js, middleware, etc.)
           [ -f "next.config.js" ] && cp next.config.js deployment-package/
@@ -131,4 +132,5 @@ jobs:
           app-name: 'Synaphack'
           slot-name: 'Production'
           package: node-app
+
 
