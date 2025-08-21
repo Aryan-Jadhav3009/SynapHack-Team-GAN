@@ -61,7 +61,6 @@ jobs:
         run: |
           cat > deployment-package/server.js << 'EOF'
 const { createServer } = require('http')
-const { parse } = require('url')
 const next = require('next')
 
 const dev = process.env.NODE_ENV !== 'production'
@@ -126,3 +125,4 @@ EOF
           app-name: 'Synaphack'
           slot-name: 'Production'
           package: node-app
+
