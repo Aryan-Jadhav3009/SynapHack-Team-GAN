@@ -55,6 +55,8 @@ jobs:
 
           # Copy other necessary files (next.config.js, middleware, etc.)
           [ -f "next.config.js" ] && cp next.config.js deployment-package/
+          [ -f "tsconfig.json" ] && cp tsconfig.json deployment-package/
+          [ -f "jsconfig.json" ] && cp jsconfig.json deployment-package/
 
           # Only loop if there are matching middleware files
           shopt -s nullglob
@@ -137,6 +139,7 @@ jobs:
           app-name: 'Synaphack'
           slot-name: 'Production'
           package: node-app
+
 
 
 
