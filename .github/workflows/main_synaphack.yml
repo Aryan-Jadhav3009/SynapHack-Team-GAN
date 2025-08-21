@@ -47,7 +47,7 @@ jobs:
           cp -r prisma deployment-package/ 2>/dev/null || true
           cp -r scripts deployment-package/ 2>/dev/null || true
 
-          # Copy   other necessary files (next.config.js, middleware, etc.)
+          # Copy other necessary files (next.config.js, middleware, etc.)
           [ -f "next.config.js" ] && cp next.config.js deployment-package/
 
           # Only loop if there are matching middleware files
@@ -57,8 +57,41 @@ jobs:
           done
           shopt -u nullglob
 
-        
+      - name: Create server.js for Azure
+        run: |
+          cat > deployment-package/server.js << 'EOF'
+const { createServer } = require('http')
+const { parse } = require('url')
+const next = require('next')
 
+const dev = process.env.NODE_ENV !== 'production'
+const hostname = '0.0.0.0'  // Azure requires this
+const port = process.env.PORT || 8080
+
+const app = next({ dev, hostname, port })
+const handle = app.getRequestHandler()
+
+app.prepare().then(() => {
+  createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url, true)
+      await handle(req, res, parsedUrl)
+    } catch (err) {
+      console.error('Error occurred handling', req.url, err)
+      res.statusCode = 500
+      res.end('internal server error')
+    }
+  }).listen(port, (err) => {
+    if (err) throw err
+    console.log(`> Ready on http://${hostname}:${port}`)
+  })
+})
+EOF
+
+      - name: Update package.json for Azure
+        run: |
+          cd deployment-package
+          npm pkg set scripts.start="node server.js"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -93,7 +126,3 @@ jobs:
           app-name: 'Synaphack'
           slot-name: 'Production'
           package: node-app
-
-
-
-
