@@ -48,7 +48,7 @@ jobs:
           cp -r scripts deployment-package/ 2>/dev/null || true
 
           # Copy   other necessary files (next.config.js, middleware, etc.)
-          [ -f " next.config.js" ] && cp next.config.js deployment-package/
+          [ -f "next.config.js" ] && cp next.config.js deployment-package/
 
           # Only loop if there are matching middleware files
           shopt -s nullglob
@@ -64,7 +64,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: deployment-package/**
+          path: deployment-package
 
   deploy:
     runs-on: ubuntu-latest
@@ -93,6 +93,7 @@ jobs:
           app-name: 'Synaphack'
           slot-name: 'Production'
           package: node-app
+
 
 
 
