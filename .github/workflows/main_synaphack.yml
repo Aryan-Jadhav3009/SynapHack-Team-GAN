@@ -40,21 +40,18 @@ jobs:
 
       - name: Create deployment package
         run: |
-            mkdir -p deployment-package
-            # Copy folders if they exist
-            [ -d ".next" ] && cp -r .next deployment-package/
-            [ -d "public" ] && cp -r public deployment-package/
-            [ -d "prisma" ] && cp -r prisma deployment-package/
-            [ -d "scripts" ] && cp -r scripts deployment-package/
-    
-            # Copy package files
-            cp package*.json deployment-package/ 2>/dev/null || true
+          mkdir deployment-package
+          cp -r .next deployment-package/ 2>/dev/null || true
+          cp -r public deployment-package/ 2>/dev/null || true
+          cp package*.json deployment-package/ 2>/dev/null || true
+          cp -r prisma deployment-package/ 2>/dev/null || true
+          cp -r scripts deployment-package/ 2>/dev/null || true
 
-            # Copy optional files if they exist
-            [ -f "next.config.js" ] && cp next.config.js deployment-package/
-            for f in middleware*.js; do
-              [ -f "$f" ] && cp "$f" deployment-package/
-            done
+          # Copy other necessary files (next.config.js, middleware, etc.)
+          for f in next.config.js middleware*.js; do
+            [ -f "$f" ] && cp "$f" deployment-package/
+          done
+        
 
 
       - name: Upload artifact for deployment job
@@ -90,4 +87,5 @@ jobs:
           app-name: 'Synaphack'
           slot-name: 'Production'
           package: node-app
+
 
