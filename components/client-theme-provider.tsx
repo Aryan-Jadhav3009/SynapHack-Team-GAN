@@ -1,9 +1,7 @@
 "use client"
 
-import dynamic from "next/dynamic"
+import { ThemeProvider } from "./theme-provider"
 import type { ReactNode } from "react"
-
-const ThemeProvider = dynamic(() => import("./theme-provider").then((mod) => mod.ThemeProvider), { ssr: false })
 
 interface ClientThemeProviderProps {
   children: ReactNode
