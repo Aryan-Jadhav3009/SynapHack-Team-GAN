@@ -4,6 +4,8 @@ const fs = require("fs")
 const path = require("path")
 const next = require("next")
 
+process.env.NEXT_DISABLE_TRACE = "1"
+
 // --- Ensure .next and .next/trace exist before Next runs ---
 try {
   const nextDir = path.join(__dirname, ".next")
