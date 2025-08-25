@@ -1,66 +1,54 @@
 const { createServer } = require("http")
 const { parse } = require("url")
-const next = require("next")
 const fs = require("fs")
 const path = require("path")
+const next = require("next")
+
+// --- Ensure .next and .next/trace exist before Next runs ---
+try {
+  const nextDir = path.join(__dirname, ".next")
+  if (!fs.existsSync(nextDir)) {
+    fs.mkdirSync(nextDir, { recursive: true })
+  }
+  const tracePath = path.join(nextDir, "trace")
+  // create file if missing (open with 'a' creates it)
+  const fd = fs.openSync(tracePath, "a")
+  fs.closeSync(fd)
+} catch (e) {
+  // log warning but continue (defensive)
+  console.error("Warning: could not ensure .next/trace exists:", e && e.stack ? e.stack : e)
+}
+// ------------------------------------------------------------
 
 const dev = process.env.NODE_ENV !== "production"
-const hostname = process.env.HOSTNAME || "0.0.0.0"
 const port = process.env.PORT || 8080
+const hostname = "0.0.0.0" // listen on all interfaces
 
-console.log(`Starting server in ${dev ? "development" : "production"} mode`)
-console.log(`Hostname: ${hostname}, Port: ${port}`)
-
-const nextDir = path.join(process.cwd(), ".next")
-if (!fs.existsSync(nextDir)) {
-  console.error("❌ .next directory not found. Build should have been completed during deployment.")
-  console.error("If you're running locally, run 'npm run build' first")
-  process.exit(1)
-} else {
-  console.log("✅ .next directory found")
-}
-
-// Initialize Next.js app
 const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
-
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received, shutting down gracefully")
-  process.exit(0)
-})
-
-process.on("SIGINT", () => {
-  console.log("SIGINT received, shutting down gracefully")
-  process.exit(0)
-})
 
 app
   .prepare()
   .then(() => {
-    console.log("Next.js app prepared successfully")
-    const server = createServer(async (req, res) => {
+    createServer(async (req, res) => {
       try {
         const parsedUrl = parse(req.url, true)
         await handle(req, res, parsedUrl)
       } catch (err) {
-        console.error("Error occurred handling", req.url, err)
+        console.error("Error occurred handling", req.url, err && err.stack ? err.stack : err)
         res.statusCode = 500
         res.end("internal server error")
       }
     })
-
-    server
       .once("error", (err) => {
-        console.error("Server error:", err)
+        console.error("Server error:", err && err.stack ? err.stack : err)
         process.exit(1)
       })
       .listen(port, hostname, () => {
         console.log(`> Ready on http://${hostname}:${port}`)
-        console.log(`> Environment: ${process.env.NODE_ENV}`)
       })
   })
   .catch((err) => {
-    console.error("Failed to prepare Next.js app:", err)
-    console.error("This usually means the .next directory is missing or corrupted")
+    console.error("App prepare failed:", err && err.stack ? err.stack : err)
     process.exit(1)
   })
