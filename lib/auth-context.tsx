@@ -29,7 +29,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const response = await fetch("/api/auth/me")
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+
+      const response = await fetch("/api/auth/me", {
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeoutId)
+
       if (response.ok) {
         const data = await response.json()
         setUser(data.user)
@@ -37,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(null)
       }
     } catch (error) {
-      console.error("Error refreshing user:", error)
+      console.warn("Auth check failed, continuing without authentication:", error)
       setUser(null)
     } finally {
       setLoading(false)
@@ -45,44 +53,61 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const login = async (email: string, password: string) => {
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    })
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
 
-    const data = await response.json()
+      const data = await response.json()
 
-    if (!response.ok) {
-      throw new Error(data.error || "Login failed")
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed")
+      }
+
+      setUser(data.user)
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Login failed")
     }
-
-    setUser(data.user)
   }
 
   const register = async (registerData: RegisterData) => {
-    const response = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(registerData),
-    })
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(registerData),
+      })
 
-    const data = await response.json()
+      const data = await response.json()
 
-    if (!response.ok) {
-      throw new Error(data.error || "Registration failed")
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed")
+      }
+
+      setUser(data.user)
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Registration failed")
     }
-
-    setUser(data.user)
   }
 
   const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" })
-    setUser(null)
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } catch (error) {
+      console.warn("Logout request failed:", error)
+    } finally {
+      setUser(null)
+    }
   }
 
   useEffect(() => {
-    refreshUser()
+    const timer = setTimeout(() => {
+      refreshUser()
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [])
 
   return (
