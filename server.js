@@ -1,6 +1,9 @@
 const { createServer } = require("http")
 const { parse } = require("url")
 const next = require("next")
+const { execSync } = require("child_process")
+const fs = require("fs")
+const path = require("path")
 
 const dev = process.env.NODE_ENV !== "production"
 const hostname = process.env.HOSTNAME || "localhost"
@@ -8,6 +11,20 @@ const port = process.env.PORT || 8080
 
 console.log(`Starting server in ${dev ? "development" : "production"} mode`)
 console.log(`Hostname: ${hostname}, Port: ${port}`)
+
+const nextDir = path.join(process.cwd(), ".next")
+if (!fs.existsSync(nextDir)) {
+  console.log("⚠️  .next directory not found. Running build...")
+  try {
+    execSync("npm run build", { stdio: "inherit" })
+    console.log("✅ Build completed successfully")
+  } catch (error) {
+    console.error("❌ Build failed:", error.message)
+    process.exit(1)
+  }
+} else {
+  console.log("✅ .next directory found")
+}
 
 // Initialize Next.js app
 const app = next({ dev, hostname, port })
