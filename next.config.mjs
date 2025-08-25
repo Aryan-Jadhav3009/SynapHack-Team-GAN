@@ -9,6 +9,13 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    instrumentationHook: false,
+  },
+  webpack: (config) => {
+    config.infrastructureLogging = { level: 'error' }
+    return config
+  },
 }
 
 export default nextConfig
