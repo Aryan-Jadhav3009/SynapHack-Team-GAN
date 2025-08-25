@@ -10,7 +10,6 @@ const nextConfig = {
     unoptimized: true,
   },
   experimental: {
-    instrumentationHook: false,
   },
   webpack: (config) => {
     config.infrastructureLogging = { level: 'error' }
