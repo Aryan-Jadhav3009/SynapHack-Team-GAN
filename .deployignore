@@ -27,6 +27,74 @@ logs/
 .tmp/
 temp/
 
+# Development and build tools
+webpack.config.*
+rollup.config.*
+vite.config.*
+tsconfig.*
+babel.config.*
+.babelrc*
+.swcrc
+postcss.config.*
+tailwind.config.*
+
+# Source maps and debugging
+*.map
+*.map.js
+*.map.css
+
+# Documentation and examples
+docs/
+examples/
+demo/
+samples/
+*.example.*
+
+# Large media files that might be in public
+public/**/*.mp4
+public/**/*.mov
+public/**/*.avi
+public/**/*.mkv
+public/**/*.webm
+public/**/*.pdf
+public/**/*.zip
+public/**/*.rar
+
+# Temporary and cache directories
+.turbo/
+.swc/
+.webpack/
+.rollup.cache/
+.vite/
+.nuxt/
+.output/
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.pnpm-store/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+.atom/
+.brackets.json
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.Spotlight-V100
+.Trashes
+
+.parcel-cache/
+.fusebox/
+.dynamodb/
+.serverless/
+
 *.md
 README*
 LICENSE*
@@ -51,7 +119,3 @@ docker-compose*
 prisma/migrations/
 public/uploads/
 uploads/
-.parcel-cache/
-.fusebox/
-.dynamodb/
-.serverless/
